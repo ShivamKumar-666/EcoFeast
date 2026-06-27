@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     curl \
+    pkg-config \
+    libcairo2-dev \
+    libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
@@ -21,8 +24,8 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 
 # Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-docker.txt .
+RUN pip install --no-cache-dir -r requirements-docker.txt
 
 # Copy project
 COPY . .
@@ -37,6 +40,9 @@ RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
+
+# Ensure system binaries are in PATH
+ENV PATH="/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
 
 # Expose port
 EXPOSE 8000
