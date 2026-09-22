@@ -55,13 +55,20 @@ EcoFeast/
 ├── donations/          # Core donation models, serializers, and views
 ├── users/              # Custom user roles (Donors/NGOs) and capability profiles
 ├── ml_service/         # Feature engineering, XGBoost training, and SHAP explainability
-├── genai_service/      # LLM-based image/text information extraction
+├── genai_service/      # LLM-based image/text information extraction (Groq Llama)
 ├── rag_service/        # Qdrant NGO profile embeddings and weighted matching
-├── agents/             # LangGraph state definition and agent node handlers
-├── templates/          # HTML templates (Dashboard, Maps, and Agent Monitoring)
-├── tests/              # Pytest test suite for ML, GenAI, RAG, and Agents
-├── Dockerfile          # Production web service dockerfile
-└── docker-compose.yml  # Local services (Django, Postgres, Redis, Qdrant)
+├── agents/             # LangGraph state definition and autonomous agent node handlers
+├── templates/          # HTML templates (Dashboard, Maps, and Agent Observability)
+├── tests/              # Pytest test suite for ML, GenAI, RAG, and Agents (91 tests)
+├── test_evidence/      # Automated & manual test evidence screenshots and logs
+├── EcoFeast_Testing_Report_Template.md # Full QA & independent ML evaluation report
+├── EcoFeast_2.0_Updated_Roadmap.md     # Architecture roadmap & implementation guide
+├── start_docker.bat    # Windows 1-click Docker startup script
+├── start_local.bat     # Windows 1-click Local dev startup script
+├── uv.lock             # Deterministic dependency lockfile
+├── requirements.txt    # Production & testing dependencies
+├── Dockerfile          # Production web service Dockerfile
+└── docker-compose.yml  # Multi-service stack (Django, Postgres, Redis, Qdrant)
 ```
 
 ---
@@ -69,60 +76,126 @@ EcoFeast/
 ## 🚀 Getting Started
 
 ### Prerequisites
-* Docker and Docker Compose
-* Python 3.10+ (if running locally without Docker)
-* A [Groq API Key](https://console.groq.com/) for GenAI features
+* **Docker & Docker Compose** (for containerized setup)
+* **Python 3.11+ / 3.13** (if running locally without Docker)
+* **[uv](https://github.com/astral-sh/uv)** (recommended for fast local Python dependency management)
+* A **[Groq API Key](https://console.groq.com/)** for GenAI vision and chat intake features
+
+---
+
+### Windows Quick Start (1-Click Batch Scripts)
+
+- **Docker Environment**: Double-click or run [`start_docker.bat`](./start_docker.bat)
+  - Automatically verifies Docker Desktop is running.
+  - Builds and starts all background services (`db`, `redis`, `qdrant`, `web`).
+  - Runs database migrations and populates mock NGO RAG profiles into Qdrant.
+- **Local Development**: Double-click or run [`start_local.bat`](./start_local.bat)
+  - Ensures dependencies are installed via `uv`.
+  - Runs database migrations.
+  - Starts the Django development server on `http://localhost:8000`.
+
+---
 
 ### Running with Docker (Recommended)
 
 1. **Clone the repository and enter the directory:**
    ```bash
-   git clone https://github.com/SairajPP/EcoFeast.git
+   git clone https://github.com/ShivamKumar-666/EcoFeast.git
    cd EcoFeast
    ```
 
-2. **Create a `.env` file in the project root:**
-   ```env
-   DEBUG=1
-   SECRET_KEY=your_django_secret_key
-   GROQ_API_KEY=your_groq_api_key
-   POSTGRES_DB=ecofeast
-   POSTGRES_USER=ecofeast
-   POSTGRES_PASSWORD=ecofeast_dev_2026
-   QDRANT_URL=http://qdrant:6333
+2. **Configure your `.env` file:**
+   Copy the example environment template:
+   ```bash
+   cp .env.example .env
    ```
+   Provide your `GROQ_API_KEY` and adjust database/secret settings as needed.
 
 3. **Build and start the container services:**
    ```bash
-   docker-compose up --build
+   docker-compose up --build -d
    ```
-   This will spin up:
+   This spins up:
    * **Django Web Server** at `http://localhost:8000`
    * **PostgreSQL Database** at `localhost:5432`
    * **Redis Cache/Broker** at `localhost:6379`
    * **Qdrant Vector DB** at `localhost:6333`
 
-4. **Run migrations and populate mock data:**
+4. **Run migrations and populate mock NGO profiles:**
    ```bash
    docker-compose exec web python manage.py migrate
-   # Optional: Sync RAG profiles
    docker-compose exec web python manage.py shell -c "from rag_service.matcher import sync_all_ngos; sync_all_ngos()"
    ```
 
 ---
 
+### Running Locally (Without Docker)
+
+1. **Clone the repository and navigate into the directory:**
+   ```bash
+   git clone https://github.com/ShivamKumar-666/EcoFeast.git
+   cd EcoFeast
+   ```
+
+2. **Create and activate a virtual environment:**
+   Using `uv` (recommended):
+   ```bash
+   uv venv
+   # On Windows:
+   .venv\Scripts\activate
+   # On Linux/macOS:
+   source .venv/bin/activate
+   ```
+   Or using standard `venv`:
+   ```bash
+   python -m venv venv
+   # On Windows:
+   venv\Scripts\activate
+   # On Linux/macOS:
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   uv pip install -r requirements.txt
+   # OR with standard pip:
+   pip install -r requirements.txt
+   ```
+
+4. **Configure `.env` file:**
+   Create a `.env` file in the project root based on `.env.example`.
+
+5. **Run migrations and start the development server:**
+   ```bash
+   python manage.py migrate
+   python manage.py runserver
+   ```
+   Visit `http://localhost:8000` in your browser.
+
+---
+
 ## 🧪 Verification & Testing
 
-The project uses `pytest` for unit and integration testing.
+The project uses `pytest` for unit, integration, and agent state machine testing (**91/91 tests passing**).
 
-Run all tests inside the Docker container:
+**Run tests locally:**
+```bash
+uv run pytest
+# or with an active virtualenv:
+pytest
+```
+
+**Run tests inside Docker:**
 ```bash
 docker-compose exec web pytest
 ```
 
-The test suite covers:
-* **Models:** CustomUser profiles and Donation constraints.
-* **ML Service:** Feature transform pipelines, model predictions, and SHAP explainer runs.
-* **GenAI Service:** Llama extraction correctness and explainers (mocked API).
-* **RAG Service:** Qdrant upserts and combined distance/capacity matcher.
-* **Agents:** LangGraph StateGraph state updates, validation filters, and routing loops.
+The automated test suite covers:
+* **Django Models & Auth:** CustomUser profiles, roles, and Donation constraints.
+* **ML Service:** Feature transformation pipelines, XGBoost predictions, and SHAP explainability.
+* **GenAI Service:** Llama vision/chat extraction structures and explanation generation.
+* **RAG Service:** Qdrant embedding upserts and multi-criteria constraint matcher.
+* **Agents:** LangGraph StateGraph state transitions, validation checks, and autonomous escalation loops.
+
+> 📊 **Detailed Quality & Evaluation Report:**
+> Comprehensive manual and automated test execution results, E2E Playwright logs, and independent ML validation metrics (Accuracy: 92.5%, ROC-AUC: 0.988, Confusion Matrix, and SHAP plots) are documented in [`EcoFeast_Testing_Report_Template.md`](./EcoFeast_Testing_Report_Template.md).

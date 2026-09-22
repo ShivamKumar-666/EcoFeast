@@ -1,9 +1,9 @@
 # EcoFeast — Software Testing Report
 
-**Project:** EcoFeast (Food Waste Redistribution Platform)
-**Team/Author:** AI Agent
-**Date:** 2026-08-28
-**Version Tested:** Local development build (commit unknown)
+**Project:** EcoFeast (Autonomous Food Waste Redistribution Platform)
+**Team/Author:** EcoFeast Engineering Team
+**Date:** September 2026
+**Version Tested:** EcoFeast v2.0.0 (commit `8436cfd`, branch `shivam`)
 
 ---
 
