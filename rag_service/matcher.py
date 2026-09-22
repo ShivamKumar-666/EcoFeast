@@ -175,6 +175,8 @@ def sync_ngo_to_vector_store(ngo_id: int) -> bool:
     Returns True if successful.
     """
     try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
         ngo = User.objects.get(id=ngo_id, role__in=["ngo", "shelter"])
     except User.DoesNotExist:
         logger.warning(f"NGO {ngo_id} not found")
@@ -213,6 +215,8 @@ def sync_ngo_to_vector_store(ngo_id: int) -> bool:
 
 def sync_all_ngos() -> Dict[str, int]:
     """Sync all NGO profiles to Qdrant. Returns counts."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
     ngos = User.objects.filter(role__in=["ngo", "shelter"])
 
     success = 0

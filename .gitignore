@@ -8,4 +8,7 @@ ml_service/models/*.json
 ml_service/models/*.pkl
 donations/food_quality_model.pkl
 .vscode/
+.venv/
+*.egg-info/
+.pytest_cache/
 
